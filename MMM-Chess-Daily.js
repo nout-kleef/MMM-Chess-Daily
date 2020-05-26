@@ -10,12 +10,13 @@
 Module.register("MMM-Chess-Daily", {
 	defaults: {
 		updateInterval: 60000,
-		retryDelay: 5000
+		retryDelay: 5000,
+		username: ""
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
 
-	start: function() {
+	start: function () {
 		var self = this;
 		var dataRequest = null;
 		var dataNotification = null;
@@ -25,7 +26,7 @@ Module.register("MMM-Chess-Daily", {
 
 		// Schedule update timer.
 		this.getData();
-		setInterval(function() {
+		setInterval(function () {
 			self.updateDom();
 		}, this.config.updateInterval);
 	},
@@ -36,15 +37,18 @@ Module.register("MMM-Chess-Daily", {
 	 * get a URL request
 	 *
 	 */
-	getData: function() {
+	getData: function () {
 		var self = this;
+
+		// getChessData(this.config.username);
+		this.sendSocketNotification("MMM-Chess-Daily-GET-DATA", this.config.username);
 
 		var urlApi = "https://jsonplaceholder.typicode.com/posts/1";
 		var retry = true;
 
 		var dataRequest = new XMLHttpRequest();
 		dataRequest.open("GET", urlApi, true);
-		dataRequest.onreadystatechange = function() {
+		dataRequest.onreadystatechange = function () {
 			console.log(this.readyState);
 			if (this.readyState === 4) {
 				console.log(this.status);
@@ -72,19 +76,19 @@ Module.register("MMM-Chess-Daily", {
 	 * argument delay number - Milliseconds before next update.
 	 *  If empty, this.config.updateInterval is used.
 	 */
-	scheduleUpdate: function(delay) {
+	scheduleUpdate: function (delay) {
 		var nextLoad = this.config.updateInterval;
 		if (typeof delay !== "undefined" && delay >= 0) {
 			nextLoad = delay;
 		}
-		nextLoad = nextLoad ;
+		nextLoad = nextLoad;
 		var self = this;
-		setTimeout(function() {
+		setTimeout(function () {
 			self.getData();
 		}, nextLoad);
 	},
 
-	getDom: function() {
+	getDom: function () {
 		var self = this;
 
 		// create element wrapper for show into the module
@@ -109,14 +113,14 @@ Module.register("MMM-Chess-Daily", {
 		if (this.dataNotification) {
 			var wrapperDataNotification = document.createElement("div");
 			// translations  + datanotification
-			wrapperDataNotification.innerHTML =  this.translate("UPDATE") + ": " + this.dataNotification.date;
+			wrapperDataNotification.innerHTML = this.translate("UPDATE") + ": " + this.dataNotification.date;
 
 			wrapper.appendChild(wrapperDataNotification);
 		}
 		return wrapper;
 	},
 
-	getScripts: function() {
+	getScripts: function () {
 		return [];
 	},
 
@@ -127,7 +131,7 @@ Module.register("MMM-Chess-Daily", {
 	},
 
 	// Load translations files
-	getTranslations: function() {
+	getTranslations: function () {
 		//FIXME: This can be load a one file javascript definition
 		return {
 			en: "translations/en.json",
@@ -135,10 +139,10 @@ Module.register("MMM-Chess-Daily", {
 		};
 	},
 
-	processData: function(data) {
+	processData: function (data) {
 		var self = this;
 		this.dataRequest = data;
-		if (this.loaded === false) { self.updateDom(self.config.animationSpeed) ; }
+		if (this.loaded === false) { self.updateDom(self.config.animationSpeed); }
 		this.loaded = true;
 
 		// the data if load
@@ -148,10 +152,12 @@ Module.register("MMM-Chess-Daily", {
 
 	// socketNotificationReceived from helper
 	socketNotificationReceived: function (notification, payload) {
-		if(notification === "MMM-Chess-Daily-NOTIFICATION_TEST") {
+		if (notification === "MMM-Chess-Daily-NOTIFICATION_TEST") {
 			// set dataNotification
 			this.dataNotification = payload;
 			this.updateDom();
+		} else if (notification === "MMM-Chess-Daily-UPDATE") {
+			console.log("received!", payload);
 		}
 	},
 });
