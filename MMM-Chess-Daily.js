@@ -11,15 +11,19 @@ Module.register("MMM-Chess-Daily", {
 	defaults: {
 		updateInterval: 60000,
 		retryDelay: 5000,
-		username: ""
+		username: "",
+		maxGames: 5
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
 
 	start: function () {
 		var self = this;
-		var dataRequest = null;
+		var gamesArray = null;
 		var dataNotification = null;
+		if (this.config.maxGames < 0) {
+			this.config.maxGames = Number.MAX_SAFE_INTEGER;
+		}
 
 		//Flag for check if module is loaded
 		this.loaded = false;
@@ -38,35 +42,8 @@ Module.register("MMM-Chess-Daily", {
 	 *
 	 */
 	getData: function () {
-		var self = this;
-
-		// getChessData(this.config.username);
-		this.sendSocketNotification("MMM-Chess-Daily-GET-DATA", this.config.username);
-
-		var urlApi = "https://jsonplaceholder.typicode.com/posts/1";
-		var retry = true;
-
-		var dataRequest = new XMLHttpRequest();
-		dataRequest.open("GET", urlApi, true);
-		dataRequest.onreadystatechange = function () {
-			console.log(this.readyState);
-			if (this.readyState === 4) {
-				console.log(this.status);
-				if (this.status === 200) {
-					self.processData(JSON.parse(this.response));
-				} else if (this.status === 401) {
-					self.updateDom(self.config.animationSpeed);
-					Log.error(self.name, this.status);
-					retry = false;
-				} else {
-					Log.error(self.name, "Could not load data.");
-				}
-				if (retry) {
-					self.scheduleUpdate((self.loaded) ? -1 : self.config.retryDelay);
-				}
-			}
-		};
-		dataRequest.send();
+		// this.sendSocketNotification("MMM-Chess-Daily-GET-DATA", this.config.username);
+		this.sendSocketNotification("MMM-Chess-Daily-GET-GAMES", this.config.username);
 	},
 
 
@@ -88,25 +65,62 @@ Module.register("MMM-Chess-Daily", {
 		}, nextLoad);
 	},
 
+	getUsername: function (url) {
+		return url.substr(url.lastIndexOf("/"));
+	},
+
+	getLastMove: function (pgn) {
+		// TODO: implement stub
+		return pgn;
+	},
+
+	getDeadline: function (game) {
+		return game.move_by;
+	},
+
 	getDom: function () {
+		console.log("building DOM...");
 		var self = this;
 
 		// create element wrapper for show into the module
 		var wrapper = document.createElement("div");
-		// If this.dataRequest is not empty
-		if (this.dataRequest) {
-			var wrapperDataRequest = document.createElement("div");
-			// check format https://jsonplaceholder.typicode.com/posts/1
-			wrapperDataRequest.innerHTML = this.dataRequest.title;
+		// If this.gamesArray is not empty
+		// TODO: add opponent avatars
+		if (this.gamesArray) {
+			var gamesDom = document.createElement("table");
+			for (var i = 0; i < this.gamesArray.games.length; i++) {
+				var gameDom = document.createElement("tr");
+				var deadlineDom = document.createElement("td");
+				var opponentDom = document.createElement("td");
+				var lastMoveDom = document.createElement("td");
 
-			var labelDataRequest = document.createElement("label");
-			// Use translate function
-			//             this id defined in translations files
-			labelDataRequest.innerHTML = this.translate("TITLE");
+				var game = this.gamesArray.games[i];
+				var opponent = this.getUsername(game.white);
+				var userTurn = false;
 
+				if (opponent === this.config.username) { // user is white
+					opponent = this.getUsername(game.black);
+					gameDom.className = "white";
+					userTurn = game.turn === "white";
+				} else { // user is black
+					gameDom.className = "black";
+					userTurn = game.turn === "black";
+				}
+				if (userTurn) {
+					gameDom.className += " userTurn";
+				}
 
-			wrapper.appendChild(labelDataRequest);
-			wrapper.appendChild(wrapperDataRequest);
+				deadlineDom.innerHTML = this.getDeadline(game);
+				opponentDom.innerHTML = opponent;
+				lastMoveDom.innerHTML = this.getLastMove(game.pgn);
+
+				gameDom.appendChild(deadlineDom);
+				gameDom.appendChild(opponentDom);
+				gameDom.appendChild(lastMoveDom);
+				gamesDom.appendChild(gameDom);
+			}
+			wrapper.appendChild(gamesDom);
+			return wrapper;
 		}
 
 		// Data from helper
@@ -132,7 +146,6 @@ Module.register("MMM-Chess-Daily", {
 
 	// Load translations files
 	getTranslations: function () {
-		//FIXME: This can be load a one file javascript definition
 		return {
 			en: "translations/en.json",
 			es: "translations/es.json"
@@ -141,23 +154,17 @@ Module.register("MMM-Chess-Daily", {
 
 	processData: function (data) {
 		var self = this;
-		this.dataRequest = data;
+		this.gamesArray = data;
 		if (this.loaded === false) { self.updateDom(self.config.animationSpeed); }
 		this.loaded = true;
-
-		// the data if load
-		// send notification to helper
-		this.sendSocketNotification("MMM-Chess-Daily-NOTIFICATION_TEST", data);
 	},
 
 	// socketNotificationReceived from helper
 	socketNotificationReceived: function (notification, payload) {
-		if (notification === "MMM-Chess-Daily-NOTIFICATION_TEST") {
-			// set dataNotification
-			this.dataNotification = payload;
-			this.updateDom();
-		} else if (notification === "MMM-Chess-Daily-UPDATE") {
-			console.log("received!", payload);
+		if (notification === "MMM-Chess-Daily-GAMES-RECEIVED") {
+			console.log("games received - processing " + payload.body.games.length +
+				" games in total");
+			this.processData(payload.body);
 		}
 	},
 });

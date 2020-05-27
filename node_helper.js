@@ -20,29 +20,20 @@ module.exports = NodeHelper.create({
 	 * argument payload mixed - The payload of the notification.
 	 */
 	socketNotificationReceived: function (notification, payload) {
-		if (notification === "MMM-Chess-Daily-NOTIFICATION_TEST") {
-			console.log("Working notification system. Notification:", notification, "payload: ", payload);
-			// Send notification
-			this.sendNotificationTest(this.anotherFunction()); //Is possible send objects :)
-		} else if (notification === "MMM-Chess-Daily-GET-DATA") {
-			console.log("received 2!", payload);
-			this.getChessData(payload);
+		if (notification === "MMM-Chess-Daily-GET-GAMES") {
+			this.fetchGames(payload);
 		}
 	},
 
-	getChessData: function (username) {
-		chessAPI.getPlayer(username)
+	fetchGames: function (username) {
+		console.info("fetching games for user " + username + "...");
+		chessAPI.getPlayerCurrentDailyChess(username)
 			.then(function (response) {
-				console.log("Player profile", response.body);
-				this.sendSocketNotification("MMM-Chess-Daily-UPDATE", response);
+				this.sendSocketNotification("MMM-Chess-Daily-GAMES-RECEIVED", response);
 			}.bind(this), function (err) {
+				// TODO: show useful error message in dom
 				console.log(err);
 			});
-	},
-
-	// Example function send notification test
-	sendNotificationTest: function (payload) {
-		this.sendSocketNotification("MMM-Chess-Daily-NOTIFICATION_TEST", payload);
 	},
 
 	// this you can create extra routes for your module
@@ -53,10 +44,5 @@ module.exports = NodeHelper.create({
 			values = self.anotherFunction();
 			res.send(values);
 		});
-	},
-
-	// Test another function
-	anotherFunction: function () {
-		return { date: new Date() };
 	}
 });
