@@ -77,7 +77,7 @@ Module.register("MMM-Chess-Daily", {
 	},
 
 	getDeadline: function (game) {
-		return game.move_by;
+		return moment(game.move_by * 1000).fromNow();
 	},
 
 	getDom: function () {
