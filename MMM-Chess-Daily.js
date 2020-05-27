@@ -66,12 +66,14 @@ Module.register("MMM-Chess-Daily", {
 	},
 
 	getUsername: function (url) {
-		return url.substr(url.lastIndexOf("/"));
+		return url.substr(url.lastIndexOf("/") + 1);
 	},
 
 	getLastMove: function (pgn) {
-		// TODO: implement stub
-		return pgn;
+		var lastDot = pgn.lastIndexOf("."); // either "31. a6" or "31... a6"
+		var start = pgn.lastIndexOf(" ", lastDot);
+		var end = pgn.indexOf(" ", lastDot + 2);
+		return pgn.substring(start, end);
 	},
 
 	getDeadline: function (game) {
