@@ -70,10 +70,11 @@ Module.register("MMM-Chess-Daily", {
 	},
 
 	getLastMove: function (pgn) {
+		// TODO: implement edge case where no moves have been made
 		var lastDot = pgn.lastIndexOf("."); // either "31. a6" or "31... a6"
 		var start = pgn.lastIndexOf(" ", lastDot);
 		var end = pgn.indexOf(" ", lastDot + 2);
-		return pgn.substring(start, end);
+		return end === -1 ? "N/A" : pgn.substring(start, end);
 	},
 
 	getDeadline: function (game) {
@@ -90,6 +91,9 @@ Module.register("MMM-Chess-Daily", {
 		// TODO: add opponent avatars
 		if (this.gamesArray) {
 			var gamesDom = document.createElement("table");
+			var gamesHeader = document.createElement("tr");
+			gamesHeader.innerHTML = "<th>time's up</th><th>opponent</th><th>newest move</th>";
+			gamesDom.appendChild(gamesHeader);
 			for (var i = 0; i < this.gamesArray.games.length; i++) {
 				var gameDom = document.createElement("tr");
 				var deadlineDom = document.createElement("td");
