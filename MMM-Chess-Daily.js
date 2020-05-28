@@ -129,7 +129,7 @@ Module.register("MMM-Chess-Daily", {
 		"K": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wk.png' />"
 	},
 
-	getBoardDom: function (fen) {
+	getBoardDom: function (fen, userIsBlack) {
 		var board = document.createElement("table");
 		var row = 0;
 		var col = 0;
@@ -148,8 +148,12 @@ Module.register("MMM-Chess-Daily", {
 		var i = 0;
 		while ((square <= 64) && (i <= fen.length)) {
 			var letter = fen[i++];
-			var aFile = 0 + ((square - 1) % 8);
-			var aRank = 7 - ((square - 1) >> 3); // integer division by 8
+			var aFile = ((square - 1) % 8);
+			var aRank = ((square - 1) >> 3); // integer division by 8
+			if (userIsBlack) {
+				aFile = 7 - aFile;
+				aRank = 7 - aRank;
+			}
 			// var sq = (ESquare)(((aRank - 1) * 8) + (aFile - 1));
 			if (this.pieces[letter] !== undefined) {
 				board.rows[aRank].cells[aFile].innerHTML = this.pieces[letter];
@@ -221,7 +225,7 @@ Module.register("MMM-Chess-Daily", {
 			if (this.config.displayBoards) {
 				var wrapperCell = this.createCell("", "");
 				wrapperCell.colSpan = 4;
-				wrapperCell.appendChild(this.getBoardDom(game.fen));
+				wrapperCell.appendChild(this.getBoardDom(game.fen, opponentIsWhite));
 				boardRow.appendChild(wrapperCell);
 			}
 
