@@ -12,7 +12,8 @@ Module.register("MMM-Chess-Daily", {
 		updateInterval: 60000,
 		retryDelay: 5000,
 		username: "",
-		maxGames: 5
+		maxGames: 5,
+		displayBoards: true
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
@@ -88,7 +89,7 @@ Module.register("MMM-Chess-Daily", {
 	},
 
 	createCell: function (className, innerHTML) {
-		var cell = document.createElement("div");
+		var cell = document.createElement("td");
 		cell.className = "divTableCell " + className;
 		cell.innerHTML = innerHTML;
 		return cell;
@@ -113,6 +114,20 @@ Module.register("MMM-Chess-Daily", {
 		return this.createCell("", moment(game.move_by * 1000).fromNow());
 	},
 
+	getBoardDom: function (fen) {
+		var board = document.createElement("table");
+		board.className = "chessBoard";
+		for (var i = 0; i < 8; i++) {
+			var rank = document.createElement("tr");
+			for (var j = 0; j < 8; j++) {
+				var cell = document.createElement("td");
+				rank.appendChild(cell);
+			}
+			board.appendChild(rank);
+		}
+		return board;
+	},
+
 	getDom: function () {
 		var wrapper = document.createElement("div");
 
@@ -125,7 +140,7 @@ Module.register("MMM-Chess-Daily", {
 		console.log("building DOM...");
 		var divTable = document.createElement("div");
 		divTable.className = "divTable normal small light";
-		var divBody = document.createElement("div");
+		var divBody = document.createElement("table");
 		divBody.className = "divTableBody";
 
 		if (!this.gamesArray) {
@@ -136,9 +151,11 @@ Module.register("MMM-Chess-Daily", {
 		this.gamesArray.forEach(game => {
 			var opponent = this.getUsername(game.white);
 			var userTurn = this.isUserTurn(game);
-			var divRow = document.createElement("div");
+			var divRow = document.createElement("tr");
+			var boardRow = document.createElement("tr");
 			var opponentIsWhite = true;
 			divRow.className = "divTableRow";
+			boardRow.className = "divTableRow";
 
 			if (opponent === this.config.username) {
 				opponent = this.getUsername(game.black);
@@ -156,7 +173,15 @@ Module.register("MMM-Chess-Daily", {
 			divRow.appendChild(this.addLastMove(game));
 			divRow.appendChild(this.addDeadline(game));
 
+			if (this.config.displayBoards) {
+				var wrapperCell = this.createCell("", "");
+				wrapperCell.colSpan = 4;
+				wrapperCell.appendChild(this.getBoardDom(game.fen));
+				boardRow.appendChild(wrapperCell);
+			}
+
 			divBody.appendChild(divRow);
+			divBody.appendChild(boardRow);
 		});
 
 		divTable.appendChild(divBody);
