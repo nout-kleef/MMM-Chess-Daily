@@ -173,7 +173,7 @@ Module.register("MMM-Chess-Daily", {
 
 	getStyles: function () {
 		return [
-			"MMM-Chess-Daily.css",
+			"MMM-Chess-Daily.css", "font-awesome.css"
 		];
 	},
 
