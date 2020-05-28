@@ -30,7 +30,7 @@ Module.register("MMM-Chess-Daily", {
 		// Schedule update timer.
 		this.getData();
 		setInterval(function () {
-			self.updateDom();
+			self.getData();
 		}, this.config.updateInterval);
 	},
 
