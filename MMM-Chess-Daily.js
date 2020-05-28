@@ -152,9 +152,6 @@ Module.register("MMM-Chess-Daily", {
 			}
 
 			divRow.appendChild(this.addTurnIndicator(userTurn));
-			// if (this.config.showAvatars) {
-			// 	divRow.appendChild(this.addOpponentAvatar(game));
-			// }
 			divRow.appendChild(this.addOpponentInfo(game, opponentIsWhite));
 			divRow.appendChild(this.addLastMove(game));
 			divRow.appendChild(this.addDeadline(game));
