@@ -114,8 +114,25 @@ Module.register("MMM-Chess-Daily", {
 		return this.createCell("", moment(game.move_by * 1000).fromNow());
 	},
 
+	pieces: {
+		"p": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/bp.png' />",
+		"r": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/br.png' />",
+		"n": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/bn.png' />",
+		"b": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/bb.png' />",
+		"q": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/bq.png' />",
+		"k": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/bk.png' />",
+		"P": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wp.png' />",
+		"R": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wr.png' />",
+		"N": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wn.png' />",
+		"B": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wb.png' />",
+		"Q": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wq.png' />",
+		"K": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wk.png' />"
+	},
+
 	getBoardDom: function (fen) {
 		var board = document.createElement("table");
+		var row = 0;
+		var col = 0;
 		board.className = "chessBoard";
 		for (var i = 0; i < 8; i++) {
 			var rank = document.createElement("tr");
@@ -125,6 +142,34 @@ Module.register("MMM-Chess-Daily", {
 			}
 			board.appendChild(rank);
 		}
+
+		// parse FEN
+		var square = 1;
+		var i = 0;
+		while ((square <= 64) && (i <= fen.length)) {
+			var letter = fen[i++];
+			var aFile = 0 + ((square - 1) % 8);
+			var aRank = 7 - ((square - 1) >> 3); // integer division by 8
+			// var sq = (ESquare)(((aRank - 1) * 8) + (aFile - 1));
+			if (this.pieces[letter] !== undefined) {
+				board.rows[aRank].cells[aFile].innerHTML = this.pieces[letter];
+			} else {
+				switch (letter) {
+					case '/': square--; break;
+					case '1': break;
+					case '2': square++; break;
+					case '3': square += 2; break;
+					case '4': square += 3; break;
+					case '5': square += 4; break;
+					case '6': square += 5; break;
+					case '7': square += 6; break;
+					case '8': square += 7; break;
+					default: return -1;
+				}
+			}
+			square++;
+		}
+
 		return board;
 	},
 
