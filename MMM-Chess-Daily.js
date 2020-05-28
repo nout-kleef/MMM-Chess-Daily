@@ -72,13 +72,20 @@ Module.register("MMM-Chess-Daily", {
 	getLastMove: function (pgn) {
 		// TODO: implement edge case where no moves have been made
 		var lastDot = pgn.lastIndexOf("."); // either "31. a6" or "31... a6"
-		var start = pgn.lastIndexOf(" ", lastDot);
+		var start = Math.max(pgn.lastIndexOf(" ", lastDot), pgn.lastIndexOf("]", lastDot)) + 1;
 		var end = pgn.indexOf(" ", lastDot + 2);
+		console.log(1462837, pgn, start, end);
 		return end === -1 ? "N/A" : pgn.substring(start, end);
 	},
 
 	getDeadline: function (game) {
 		return moment(game.move_by * 1000).fromNow();
+	},
+
+	isUserTurn: function (game) {
+		console.log(game.turn, game.white, game.black);
+		return (game.turn === "white" && this.getUsername(game.white) === this.config.username) ||
+			(game.turn === "black" && this.getUsername(game.black) === this.config.username);
 	},
 
 	getDom: function () {
@@ -94,25 +101,22 @@ Module.register("MMM-Chess-Daily", {
 			var gamesHeader = document.createElement("tr");
 			gamesHeader.innerHTML = "<th>time's up</th><th>opponent</th><th>newest move</th>";
 			gamesDom.appendChild(gamesHeader);
-			for (var i = 0; i < this.gamesArray.games.length; i++) {
+			for (var i = 0; i < this.gamesArray.length; i++) {
 				var gameDom = document.createElement("tr");
 				var deadlineDom = document.createElement("td");
 				var opponentDom = document.createElement("td");
 				var lastMoveDom = document.createElement("td");
 
-				var game = this.gamesArray.games[i];
+				var game = this.gamesArray[i];
 				var opponent = this.getUsername(game.white);
-				var userTurn = false;
 
 				if (opponent === this.config.username) { // user is white
 					opponent = this.getUsername(game.black);
 					gameDom.className = "white";
-					userTurn = game.turn === "white";
 				} else { // user is black
 					gameDom.className = "black";
-					userTurn = game.turn === "black";
 				}
-				if (userTurn) {
+				if (this.isUserTurn(game)) {
 					gameDom.className += " userTurn";
 				}
 
@@ -160,7 +164,17 @@ Module.register("MMM-Chess-Daily", {
 
 	processData: function (data) {
 		var self = this;
-		this.gamesArray = data;
+		// sort by userTurn, deadline
+		data.games.sort(function (a, b) {
+			const aTurn = this.isUserTurn(a);
+			if (aTurn === this.isUserTurn(b)) {
+				return a.deadline - b.deadline;
+			} else {
+				return aTurn ? -1 : 1;
+			}
+		}.bind(this));
+		// respect maximum entries
+		this.gamesArray = data.games.slice(0, this.config.maxGames);
 		if (this.loaded === false) { self.updateDom(self.config.animationSpeed); }
 		this.loaded = true;
 	},
