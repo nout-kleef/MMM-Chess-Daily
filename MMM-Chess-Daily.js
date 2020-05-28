@@ -20,7 +20,6 @@ Module.register("MMM-Chess-Daily", {
 	start: function () {
 		var self = this;
 		var gamesArray = null;
-		var dataNotification = null;
 		if (this.config.maxGames < 0) {
 			this.config.maxGames = Number.MAX_SAFE_INTEGER;
 		}
@@ -88,59 +87,83 @@ Module.register("MMM-Chess-Daily", {
 			(game.turn === "black" && this.getUsername(game.black) === this.config.username);
 	},
 
+	createCell: function (className, innerHTML) {
+		var cell = document.createElement("div");
+		cell.className = "divTableCell " + className;
+		cell.innerHTML = innerHTML;
+		return cell;
+	},
+
+	addTurnIndicator: function (userTurn) {
+		var icon = userTurn ? "arrow-circle-right" : "hourglass-half";
+		return this.createCell("", "<i class='fa fa-" + icon + "' aria-hidden='true'></i>");
+	},
+
+	addOpponentInfo: function (game, opponentIsWhite) {
+		var username = this.getUsername(opponentIsWhite ? game.white : game.black);
+		return this.createCell("", username);
+	},
+
+	addLastMove: function (game) {
+		var lastMove = this.getLastMove(game.pgn);
+		return this.createCell("", lastMove);
+	},
+
+	addDeadline: function (game) {
+		return this.createCell("", moment(game.move_by * 1000).fromNow());
+	},
+
 	getDom: function () {
-		console.log("building DOM...");
-		var self = this;
-
-		// create element wrapper for show into the module
 		var wrapper = document.createElement("div");
-		// If this.gamesArray is not empty
-		// TODO: add opponent avatars
-		if (this.gamesArray) {
-			var gamesDom = document.createElement("table");
-			var gamesHeader = document.createElement("tr");
-			gamesHeader.innerHTML = "<th>time's up</th><th>opponent</th><th>newest move</th>";
-			gamesDom.appendChild(gamesHeader);
-			for (var i = 0; i < this.gamesArray.length; i++) {
-				var gameDom = document.createElement("tr");
-				var deadlineDom = document.createElement("td");
-				var opponentDom = document.createElement("td");
-				var lastMoveDom = document.createElement("td");
 
-				var game = this.gamesArray[i];
-				var opponent = this.getUsername(game.white);
-
-				if (opponent === this.config.username) { // user is white
-					opponent = this.getUsername(game.black);
-					gameDom.className = "white";
-				} else { // user is black
-					gameDom.className = "black";
-				}
-				if (this.isUserTurn(game)) {
-					gameDom.className += " userTurn";
-				}
-
-				deadlineDom.innerHTML = this.getDeadline(game);
-				opponentDom.innerHTML = opponent;
-				lastMoveDom.innerHTML = this.getLastMove(game.pgn);
-
-				gameDom.appendChild(deadlineDom);
-				gameDom.appendChild(opponentDom);
-				gameDom.appendChild(lastMoveDom);
-				gamesDom.appendChild(gameDom);
-			}
-			wrapper.appendChild(gamesDom);
+		if (!this.loaded) {
+			wrapper.innerHTML = "Loading...";
+			wrapper.className = "dimmed light small";
 			return wrapper;
 		}
 
-		// Data from helper
-		if (this.dataNotification) {
-			var wrapperDataNotification = document.createElement("div");
-			// translations  + datanotification
-			wrapperDataNotification.innerHTML = this.translate("UPDATE") + ": " + this.dataNotification.date;
+		console.log("building DOM...");
+		var divTable = document.createElement("div");
+		divTable.className = "divTable normal small light";
+		var divBody = document.createElement("div");
+		divBody.className = "divTableBody";
 
-			wrapper.appendChild(wrapperDataNotification);
+		if (!this.gamesArray) {
+			return wrapper;
 		}
+
+		// TODO: add opponent avatars
+		this.gamesArray.forEach(game => {
+			var opponent = this.getUsername(game.white);
+			var userTurn = this.isUserTurn(game);
+			var divRow = document.createElement("div");
+			var opponentIsWhite = true;
+			divRow.className = "divTableRow";
+
+			if (opponent === this.config.username) {
+				opponent = this.getUsername(game.black);
+				opponentIsWhite = false;
+				divRow.className += " white";
+			} else {
+				divRow.className += " black";
+			}
+			if (userTurn) {
+				divRow.className += " userTurn";
+			}
+
+			divRow.appendChild(this.addTurnIndicator(userTurn));
+			// if (this.config.showAvatars) {
+			// 	divRow.appendChild(this.addOpponentAvatar(game));
+			// }
+			divRow.appendChild(this.addOpponentInfo(game, opponentIsWhite));
+			divRow.appendChild(this.addLastMove(game));
+			divRow.appendChild(this.addDeadline(game));
+
+			divBody.appendChild(divRow);
+		});
+
+		divTable.appendChild(divBody);
+		wrapper.appendChild(divTable);
 		return wrapper;
 	},
 
@@ -175,8 +198,8 @@ Module.register("MMM-Chess-Daily", {
 		}.bind(this));
 		// respect maximum entries
 		this.gamesArray = data.games.slice(0, this.config.maxGames);
-		if (this.loaded === false) { self.updateDom(self.config.animationSpeed); }
 		this.loaded = true;
+		self.updateDom(self.config.animationSpeed);
 	},
 
 	// socketNotificationReceived from helper
