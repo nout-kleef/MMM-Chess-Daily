@@ -8,3 +8,22 @@
  * Custom here your css module
  *
  */
+
+.divTable {
+    display: table;
+    width: 100%;
+}
+
+.divTableBody {
+    display: table-row-group;
+}
+
+.divTableRow {
+    display: table-row;
+}
+
+.divTableCell {
+    display: table-cell;
+    padding-left: 2px;
+    padding-right: 2px;;
+}
