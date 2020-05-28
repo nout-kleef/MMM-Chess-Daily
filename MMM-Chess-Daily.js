@@ -10,22 +10,27 @@
 Module.register("MMM-Chess-Daily", {
 	defaults: {
 		updateInterval: 60000,
-		retryDelay: 5000
+		retryDelay: 5000,
+		username: "",
+		maxGames: 5
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
 
-	start: function() {
+	start: function () {
 		var self = this;
-		var dataRequest = null;
+		var gamesArray = null;
 		var dataNotification = null;
+		if (this.config.maxGames < 0) {
+			this.config.maxGames = Number.MAX_SAFE_INTEGER;
+		}
 
 		//Flag for check if module is loaded
 		this.loaded = false;
 
 		// Schedule update timer.
 		this.getData();
-		setInterval(function() {
+		setInterval(function () {
 			self.updateDom();
 		}, this.config.updateInterval);
 	},
@@ -36,33 +41,9 @@ Module.register("MMM-Chess-Daily", {
 	 * get a URL request
 	 *
 	 */
-	getData: function() {
-		var self = this;
-
-		var urlApi = "https://jsonplaceholder.typicode.com/posts/1";
-		var retry = true;
-
-		var dataRequest = new XMLHttpRequest();
-		dataRequest.open("GET", urlApi, true);
-		dataRequest.onreadystatechange = function() {
-			console.log(this.readyState);
-			if (this.readyState === 4) {
-				console.log(this.status);
-				if (this.status === 200) {
-					self.processData(JSON.parse(this.response));
-				} else if (this.status === 401) {
-					self.updateDom(self.config.animationSpeed);
-					Log.error(self.name, this.status);
-					retry = false;
-				} else {
-					Log.error(self.name, "Could not load data.");
-				}
-				if (retry) {
-					self.scheduleUpdate((self.loaded) ? -1 : self.config.retryDelay);
-				}
-			}
-		};
-		dataRequest.send();
+	getData: function () {
+		// this.sendSocketNotification("MMM-Chess-Daily-GET-DATA", this.config.username);
+		this.sendSocketNotification("MMM-Chess-Daily-GET-GAMES", this.config.username);
 	},
 
 
@@ -72,51 +53,98 @@ Module.register("MMM-Chess-Daily", {
 	 * argument delay number - Milliseconds before next update.
 	 *  If empty, this.config.updateInterval is used.
 	 */
-	scheduleUpdate: function(delay) {
+	scheduleUpdate: function (delay) {
 		var nextLoad = this.config.updateInterval;
 		if (typeof delay !== "undefined" && delay >= 0) {
 			nextLoad = delay;
 		}
-		nextLoad = nextLoad ;
+		nextLoad = nextLoad;
 		var self = this;
-		setTimeout(function() {
+		setTimeout(function () {
 			self.getData();
 		}, nextLoad);
 	},
 
-	getDom: function() {
+	getUsername: function (url) {
+		return url.substr(url.lastIndexOf("/") + 1);
+	},
+
+	getLastMove: function (pgn) {
+		// TODO: implement edge case where no moves have been made
+		var lastDot = pgn.lastIndexOf("."); // either "31. a6" or "31... a6"
+		var start = Math.max(pgn.lastIndexOf(" ", lastDot), pgn.lastIndexOf("]", lastDot)) + 1;
+		var end = pgn.indexOf(" ", lastDot + 2);
+		console.log(1462837, pgn, start, end);
+		return end === -1 ? "N/A" : pgn.substring(start, end);
+	},
+
+	getDeadline: function (game) {
+		return moment(game.move_by * 1000).fromNow();
+	},
+
+	isUserTurn: function (game) {
+		console.log(game.turn, game.white, game.black);
+		return (game.turn === "white" && this.getUsername(game.white) === this.config.username) ||
+			(game.turn === "black" && this.getUsername(game.black) === this.config.username);
+	},
+
+	getDom: function () {
+		console.log("building DOM...");
 		var self = this;
 
 		// create element wrapper for show into the module
 		var wrapper = document.createElement("div");
-		// If this.dataRequest is not empty
-		if (this.dataRequest) {
-			var wrapperDataRequest = document.createElement("div");
-			// check format https://jsonplaceholder.typicode.com/posts/1
-			wrapperDataRequest.innerHTML = this.dataRequest.title;
+		// If this.gamesArray is not empty
+		// TODO: add opponent avatars
+		if (this.gamesArray) {
+			var gamesDom = document.createElement("table");
+			var gamesHeader = document.createElement("tr");
+			gamesHeader.innerHTML = "<th>time's up</th><th>opponent</th><th>newest move</th>";
+			gamesDom.appendChild(gamesHeader);
+			for (var i = 0; i < this.gamesArray.length; i++) {
+				var gameDom = document.createElement("tr");
+				var deadlineDom = document.createElement("td");
+				var opponentDom = document.createElement("td");
+				var lastMoveDom = document.createElement("td");
 
-			var labelDataRequest = document.createElement("label");
-			// Use translate function
-			//             this id defined in translations files
-			labelDataRequest.innerHTML = this.translate("TITLE");
+				var game = this.gamesArray[i];
+				var opponent = this.getUsername(game.white);
 
+				if (opponent === this.config.username) { // user is white
+					opponent = this.getUsername(game.black);
+					gameDom.className = "white";
+				} else { // user is black
+					gameDom.className = "black";
+				}
+				if (this.isUserTurn(game)) {
+					gameDom.className += " userTurn";
+				}
 
-			wrapper.appendChild(labelDataRequest);
-			wrapper.appendChild(wrapperDataRequest);
+				deadlineDom.innerHTML = this.getDeadline(game);
+				opponentDom.innerHTML = opponent;
+				lastMoveDom.innerHTML = this.getLastMove(game.pgn);
+
+				gameDom.appendChild(deadlineDom);
+				gameDom.appendChild(opponentDom);
+				gameDom.appendChild(lastMoveDom);
+				gamesDom.appendChild(gameDom);
+			}
+			wrapper.appendChild(gamesDom);
+			return wrapper;
 		}
 
 		// Data from helper
 		if (this.dataNotification) {
 			var wrapperDataNotification = document.createElement("div");
 			// translations  + datanotification
-			wrapperDataNotification.innerHTML =  this.translate("UPDATE") + ": " + this.dataNotification.date;
+			wrapperDataNotification.innerHTML = this.translate("UPDATE") + ": " + this.dataNotification.date;
 
 			wrapper.appendChild(wrapperDataNotification);
 		}
 		return wrapper;
 	},
 
-	getScripts: function() {
+	getScripts: function () {
 		return [];
 	},
 
@@ -127,31 +155,36 @@ Module.register("MMM-Chess-Daily", {
 	},
 
 	// Load translations files
-	getTranslations: function() {
-		//FIXME: This can be load a one file javascript definition
+	getTranslations: function () {
 		return {
 			en: "translations/en.json",
 			es: "translations/es.json"
 		};
 	},
 
-	processData: function(data) {
+	processData: function (data) {
 		var self = this;
-		this.dataRequest = data;
-		if (this.loaded === false) { self.updateDom(self.config.animationSpeed) ; }
+		// sort by userTurn, deadline
+		data.games.sort(function (a, b) {
+			const aTurn = this.isUserTurn(a);
+			if (aTurn === this.isUserTurn(b)) {
+				return a.deadline - b.deadline;
+			} else {
+				return aTurn ? -1 : 1;
+			}
+		}.bind(this));
+		// respect maximum entries
+		this.gamesArray = data.games.slice(0, this.config.maxGames);
+		if (this.loaded === false) { self.updateDom(self.config.animationSpeed); }
 		this.loaded = true;
-
-		// the data if load
-		// send notification to helper
-		this.sendSocketNotification("MMM-Chess-Daily-NOTIFICATION_TEST", data);
 	},
 
 	// socketNotificationReceived from helper
 	socketNotificationReceived: function (notification, payload) {
-		if(notification === "MMM-Chess-Daily-NOTIFICATION_TEST") {
-			// set dataNotification
-			this.dataNotification = payload;
-			this.updateDom();
+		if (notification === "MMM-Chess-Daily-GAMES-RECEIVED") {
+			console.log("games received - processing " + payload.body.games.length +
+				" games in total");
+			this.processData(payload.body);
 		}
 	},
 });

@@ -14,5 +14,8 @@
     "grunt-yamllint": "latest",
     "stylelint-config-standard": "latest",
     "time-grunt": "latest"
+  },
+  "dependencies": {
+    "chess-web-api": "^1.0.9"
   }
 }
