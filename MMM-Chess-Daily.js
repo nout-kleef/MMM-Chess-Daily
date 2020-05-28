@@ -148,7 +148,7 @@ Module.register("MMM-Chess-Daily", {
 				divRow.className += " black";
 			}
 			if (userTurn) {
-				divRow.className += " userTurn";
+				divRow.className += " userTurn bright";
 			}
 
 			divRow.appendChild(this.addTurnIndicator(userTurn));
