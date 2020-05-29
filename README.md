@@ -1,12 +1,13 @@
 # MMM-Chess-Daily
 <table>
     <tr>
-        <td style="width:50%">This is a module for the [MagicMirror²](https://github.com/MichMich/MagicMirror/).
-            You can use this module to list your chess.com <b>daily games</b>, either as a simple list, or by displaying actual chess board(s).
+        <td style="width:50%">This is a module for the <a href="https://github.com/MichMich/MagicMirror/">MagicMirror²</a>.
+            You can use this module to list your <b>https://chess.com daily games</b>, either as a simple list, or by displaying actual chess board(s).<br><br>
+		You can <b>customize this module</b>.<br> Limit the number of boards (or don't show any boards at all), alter the updating interval, and most importantly, <b>pick a nice theme</b>
         </td>
         <td>
-            <img src="impression_0.png" alt="MMM-Chess-Daily impression" /><br>
-            (You can show as many boards as you like.)
+            <img src="impression_0.png" alt="MMM-Chess-Daily impression" width="150%" /><br>
+            (You can show as many boards as you like.) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
         </td>
     </tr>
 </table>
@@ -77,7 +78,7 @@ var config = {
             <b>Default:</b> <code>true</code>
         </td>
     </tr>
-    <tr>
+    <tr id="pickTheme">
         <td><code>theme</code></td>
         <td>
             <i>Optional</i> Pick a theme for your chess pieces.<br>
