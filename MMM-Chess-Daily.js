@@ -203,6 +203,8 @@ Module.register("MMM-Chess-Daily", {
 			return wrapper;
 		}
 
+		var boardsShown = 0;
+
 		// TODO: add opponent avatars
 		this.gamesArray.forEach(game => {
 			var opponent = this.getUsername(game.white);
@@ -229,11 +231,12 @@ Module.register("MMM-Chess-Daily", {
 			divRow.appendChild(this.addLastMove(game));
 			divRow.appendChild(this.addDeadline(game));
 
-			if (this.config.displayBoards) {
+			if (boardsShown < this.config.maxBoards) {
 				var wrapperCell = this.createCell("", "");
 				wrapperCell.colSpan = 4;
 				wrapperCell.appendChild(this.getBoardDom(game.fen, opponentIsWhite));
 				boardRow.appendChild(wrapperCell);
+				boardsShown++;
 			}
 
 			divBody.appendChild(divRow);
