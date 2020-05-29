@@ -10,11 +10,11 @@
 Module.register("MMM-Chess-Daily", {
 	defaults: {
 		updateInterval: 60000,
-		retryDelay: 5000,
 		username: "",
 		maxGames: 5,
-		displayBoards: true,
-		theme: "standard"
+		maxBoards: 1,
+		highlightLastMove: true,
+		theme: "classic"
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror

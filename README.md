@@ -24,6 +24,46 @@ var config = {
 <table>
     <tr><th>Option</th><th>Description</th></tr>
     <tr>
+        <td><code>username</code></td>
+        <td>
+            <i>Required</i> you don't need an API key - simply put your (or anyone else's) username here.<br>
+            <b>Type:</b> <code>string</code><br>
+            <b>Default:</b> <code>""</code>
+        </td>
+    </tr>
+    <tr>
+        <td><code>updateInterval</code></td>
+        <td>
+            <i>Optional</i> how often do we update the games<br>
+            <b>Type:</b> <code>int</code> (milliseconds)<br>
+            <b>Default:</b> <code>60000</code> (one minute)
+        </td>
+    </tr>
+    <tr>
+        <td><code>maxGames</code></td>
+        <td>
+            <i>Optional</i> how many games to list<br>NB: ordered first by whether it is your turn, then by how much time is left<br>
+            <b>Type:</b> <code>int</code><br>
+            <b>Default:</b> <code>5</code>
+        </td>
+    </tr>
+    <tr>
+        <td><code>maxBoards</code></td>
+        <td>
+            <i>Optional</i> how many boards to show<br>
+            <b>Type:</b> <code>int</code><br>
+            <b>Default:</b> <code>1</code>
+        </td>
+    </tr>
+    <tr>
+        <td><code>highlightLastMove</code></td>
+        <td>
+            <i>Optional</i> highlight the newest move<br>
+            <b>Type:</b> <code>boolean</code><br>
+            <b>Default:</b> <code>true</code>
+        </td>
+    </tr>
+    <tr>
         <td><code>theme</code></td>
         <td>
             <i>Optional</i> Pick a theme for your chess pieces.<br>
