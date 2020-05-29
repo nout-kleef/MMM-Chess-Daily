@@ -1,21 +1,28 @@
 # MMM-Chess-Daily
 
 This is a module for the [MagicMirror²](https://github.com/MichMich/MagicMirror/).
-
-Todo: Insert description here!
+You can use this module to list your **daily games**, either as a simple list, or by displaying actual chess boards (see images).
 
 ## Using the module
 
-To use this module, add the following configuration block to the modules array in the `config/config.js` file:
+There are three steps to get this module up and running:
+1) `cd MagicMirror/modules/`, followed by `git clone https://github.com/nout-kleef/MMM-Chess-Daily.git`
+2) `cd MMM-Chess-Daily`, followed by `npm install` (this installs the `chess-web-api` Node module)
+3) add the following configuration block to the modules array in the `config/config.js` file:
 ```js
 var config = {
     modules: [
         {
-            module: 'MMM-Chess-Daily',
-            config: {
-                // See below for configurable options
-            }
-        }
+			module: 'MMM-Chess-Daily',
+			header: "my chess games",
+			position: "top_right",
+			config: {
+                username: "<YOUR_USERNAME>",
+                maxGames: 2,
+                maxBoards: 2,
+				theme: "classic"
+			}
+		}
     ]
 }
 ```
@@ -42,7 +49,7 @@ var config = {
     <tr>
         <td><code>maxGames</code></td>
         <td>
-            <i>Optional</i> how many games to list<br>NB: ordered first by whether it is your turn, then by how much time is left<br>
+            <i>Optional</i> how many games to list<br>NB: ordered first by whether it is your turn, then by how much time is left<br>NB: use any negative value to display all of your current games.<br>
             <b>Type:</b> <code>int</code><br>
             <b>Default:</b> <code>5</code>
         </td>
@@ -140,3 +147,8 @@ var config = {
         </td>
     </tr>
 </table>
+
+## Contributing
+
+If you want to improve this module, you may find the following documentation helpful:
+[https://www.npmjs.com/package/chess-web-api](https://www.npmjs.com/package/chess-web-api)
