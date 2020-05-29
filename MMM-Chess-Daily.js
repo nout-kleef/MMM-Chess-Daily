@@ -13,7 +13,8 @@ Module.register("MMM-Chess-Daily", {
 		retryDelay: 5000,
 		username: "",
 		maxGames: 5,
-		displayBoards: true
+		displayBoards: true,
+		theme: "standard"
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
@@ -114,19 +115,24 @@ Module.register("MMM-Chess-Daily", {
 		return this.createCell("", moment(game.move_by * 1000).fromNow());
 	},
 
-	pieces: {
-		"p": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/bp.png' />",
-		"r": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/br.png' />",
-		"n": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/bn.png' />",
-		"b": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/bb.png' />",
-		"q": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/bq.png' />",
-		"k": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/bk.png' />",
-		"P": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wp.png' />",
-		"R": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wr.png' />",
-		"N": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wn.png' />",
-		"B": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wb.png' />",
-		"Q": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wq.png' />",
-		"K": "<img src='http://images.chesscomfiles.com/chess-themes/pieces/light/75/wk.png' />"
+	piecesBaseUrl: "<img src='http://images.chesscomfiles.com/chess-themes/pieces/",
+
+	getPieceSrc: function (fenLetter) {
+		switch (fenLetter) {
+			case "p": return this.piecesBaseUrl + this.config.theme + "/75/bp.png' />";
+			case "r": return this.piecesBaseUrl + this.config.theme + "/75/br.png' />";
+			case "n": return this.piecesBaseUrl + this.config.theme + "/75/bn.png' />";
+			case "b": return this.piecesBaseUrl + this.config.theme + "/75/bb.png' />";
+			case "q": return this.piecesBaseUrl + this.config.theme + "/75/bq.png' />";
+			case "k": return this.piecesBaseUrl + this.config.theme + "/75/bk.png' />";
+			case "P": return this.piecesBaseUrl + this.config.theme + "/75/wp.png' />";
+			case "R": return this.piecesBaseUrl + this.config.theme + "/75/wr.png' />";
+			case "N": return this.piecesBaseUrl + this.config.theme + "/75/wn.png' />";
+			case "B": return this.piecesBaseUrl + this.config.theme + "/75/wb.png' />";
+			case "Q": return this.piecesBaseUrl + this.config.theme + "/75/wq.png' />";
+			case "K": return this.piecesBaseUrl + this.config.theme + "/75/wk.png' />";
+		}
+		return undefined;
 	},
 
 	getBoardDom: function (fen, userIsBlack) {
@@ -155,8 +161,9 @@ Module.register("MMM-Chess-Daily", {
 				aRank = 7 - aRank;
 			}
 			// var sq = (ESquare)(((aRank - 1) * 8) + (aFile - 1));
-			if (this.pieces[letter] !== undefined) {
-				board.rows[aRank].cells[aFile].innerHTML = this.pieces[letter];
+			var src = this.getPieceSrc(letter);
+			if (src !== undefined) {
+				board.rows[aRank].cells[aFile].innerHTML = src;
 			} else {
 				switch (letter) {
 					case '/': square--; break;
