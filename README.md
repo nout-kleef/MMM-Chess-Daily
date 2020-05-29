@@ -11,6 +11,7 @@
         </td>
     </tr>
 </table>
+
 ## Using the module
 
 There are three steps to get this module up and running:
