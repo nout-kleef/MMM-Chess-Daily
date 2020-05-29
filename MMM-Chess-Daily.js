@@ -75,8 +75,49 @@ Module.register("MMM-Chess-Daily", {
 		var lastDot = pgn.lastIndexOf("."); // either "31. a6" or "31... a6"
 		var start = Math.max(pgn.lastIndexOf(" ", lastDot), pgn.lastIndexOf("]", lastDot)) + 1;
 		var end = pgn.indexOf(" ", lastDot + 2);
-		console.log(1462837, pgn, start, end);
 		return end === -1 ? "N/A" : pgn.substring(start, end);
+	},
+
+	swapOrientation: function (square) {
+		return [7 - square[0], 7 - square[1]];
+	},
+
+	// returns [file, rank] of the destination square
+	// NB: assumes white orientation
+	getDestinationSquare: function (move) {
+		var castlesIdx, promotionIdx, takesIdx;
+		var isWhite = !move.includes("...");
+		var end = move.length - 1;
+
+		castlesIdx = move.indexOf("O-O");
+		if (castlesIdx !== -1) { // castling
+			if (move.includes("O-O-O")) { // queenside
+				return isWhite ? [2, 0] : [2, 7];
+			} else { // kingside
+				return isWhite ? [6, 0] : [6, 7];
+			}
+		}
+		promotionIdx = move.indexOf("=");
+		if (promotionIdx !== -1) { // pawn promotion
+			return [
+				move.charCodeAt(promotionIdx - 2) - 97,
+				move.charCodeAt(promotionIdx - 1) - 49
+			];
+		}
+		takesIdx = move.indexOf("x");
+		if (takesIdx !== -1) { // taking on destination square
+			return [
+				move.charCodeAt(takesIdx + 1) - 97,
+				move.charCodeAt(takesIdx + 2) - 49
+			];
+		}
+		if (move[end] === "+" || (move[end] === "#")) {
+			end--;
+		}
+		return [
+			move.charCodeAt(end - 1) - 97,
+			move.charCodeAt(end) - 49
+		];
 	},
 
 	getDeadline: function (game) {
@@ -84,7 +125,6 @@ Module.register("MMM-Chess-Daily", {
 	},
 
 	isUserTurn: function (game) {
-		console.log(game.turn, game.white, game.black);
 		return (game.turn === "white" && this.getUsername(game.white) === this.config.username) ||
 			(game.turn === "black" && this.getUsername(game.black) === this.config.username);
 	},
@@ -135,10 +175,8 @@ Module.register("MMM-Chess-Daily", {
 		return undefined;
 	},
 
-	getBoardDom: function (fen, userIsBlack) {
+	getBoardDom: function (fen, userIsBlack, lastMove) {
 		var board = document.createElement("table");
-		var row = 0;
-		var col = 0;
 		board.className = "chessBoard";
 		for (var i = 0; i < 8; i++) {
 			var rank = document.createElement("tr");
@@ -179,6 +217,17 @@ Module.register("MMM-Chess-Daily", {
 				}
 			}
 			square++;
+		}
+
+		// highlight destination square
+		if (this.config.highlightLastMove) {
+			var dest = this.getDestinationSquare(lastMove);
+			if (userIsBlack) {
+				dest = this.swapOrientation(dest);
+			}
+			console.info("highlighting", dest);
+			board.rows[7 - dest[1]].cells[dest[0]].innerHTML += "<div class='destination'></div>";
+			console.log(board.rows[7 - dest[1]].cells[dest[0]]);
 		}
 
 		return board;
@@ -234,7 +283,9 @@ Module.register("MMM-Chess-Daily", {
 			if (boardsShown < this.config.maxBoards) {
 				var wrapperCell = this.createCell("", "");
 				wrapperCell.colSpan = 4;
-				wrapperCell.appendChild(this.getBoardDom(game.fen, opponentIsWhite));
+				wrapperCell.appendChild(
+					this.getBoardDom(game.fen, opponentIsWhite, this.getLastMove(game.pgn))
+				);
 				boardRow.appendChild(wrapperCell);
 				boardsShown++;
 			}
