@@ -20,16 +20,16 @@ There are three steps to get this module up and running:
 var config = {
     modules: [
         {
-			module: 'MMM-Chess-Daily',
-			header: "my chess games",
-			position: "top_right",
-			config: {
-                username: "<YOUR_USERNAME>",
-                maxGames: 2,
-                maxBoards: 2,
-				theme: "classic"
-			}
+		module: 'MMM-Chess-Daily',
+		header: "my chess games",
+		position: "top_right",
+		config: {
+                	username: "<YOUR_USERNAME>",
+                	maxGames: 2,
+                	maxBoards: 2,
+			theme: "classic"
 		}
+	}
     ]
 }
 ```
