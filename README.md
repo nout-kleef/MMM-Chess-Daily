@@ -1,8 +1,15 @@
 # MMM-Chess-Daily
-
-This is a module for the [MagicMirror²](https://github.com/MichMich/MagicMirror/).
-You can use this module to list your **daily games**, either as a simple list, or by displaying actual chess boards (see images).
-
+<table>
+    <tr>
+        <td style="width:50%">This is a module for the [MagicMirror²](https://github.com/MichMich/MagicMirror/).
+            You can use this module to list your chess.com <b>daily games</b>, either as a simple list, or by displaying actual chess board(s).
+        </td>
+        <td>
+            <img src="impression_0.png" alt="MMM-Chess-Daily impression" /><br>
+            (You can show as many boards as you like.)
+        </td>
+    </tr>
+</table>
 ## Using the module
 
 There are three steps to get this module up and running:
