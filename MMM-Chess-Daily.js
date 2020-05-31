@@ -220,11 +220,12 @@ Module.register("MMM-Chess-Daily", {
 		}
 
 		// highlight destination square
-		if (this.config.highlightLastMove) {
+		if (this.config.highlightLastMove && lastMove.includes(".")) {
 			var dest = this.getDestinationSquare(lastMove);
 			if (userIsBlack) {
 				dest = this.swapOrientation(dest);
 			}
+			console.log(dest, lastMove);
 			console.info("highlighting", dest);
 			board.rows[7 - dest[1]].cells[dest[0]].innerHTML += "<div class='destination'></div>";
 			console.log(board.rows[7 - dest[1]].cells[dest[0]]);
